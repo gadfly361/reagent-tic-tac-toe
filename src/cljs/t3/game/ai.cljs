@@ -1,13 +1,20 @@
 (ns t3.game.ai
   (:require [clojure.set :refer [intersection union]]
             [t3.game.board :as board]
-            [t3.game.engine :refer [game-state all-remaining-spaces other-player other-player-spaces]]))
+            [t3.game.engine :refer [game-state all-remaining-spaces 
+                                    which-player-turn? player-win?
+                                    game-over? player-turn-sequence
+                                    other-player other-player-spaces]]))
 
 ;; ----------------------------------------
 ;; Minimax AI
 
-
-
+(defn score [snapshot]
+  (let [current-player (which-player-turn? snapshot)
+        opponent (other-player current-player)]
+    (cond (player-win? snapshot current-player) 10
+          (player-win? snapshot opponent) -10
+          :else 0)))
 
 
 ;; ----------------------------------------

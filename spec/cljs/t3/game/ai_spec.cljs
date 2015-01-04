@@ -2,7 +2,39 @@
   (:require-macros [speclj.core :refer [describe it should= before]])
   (:require [speclj.core]
             [t3.game.ai :as ai]
-            [t3.game.engine :as engine]))
+            [t3.game.engine :as engine :refer [game-state]]))
+
+;; ----------------------------------------
+;; Minimax AI
+
+(describe "minimax score:"
+          (before (engine/reset-game))
+          (it "current player won, should be 10"
+              (should= 10
+                       (do (engine/put! :board-size 3)
+                           (engine/take-space :space0) ;player1
+                           (engine/take-space :space1) ;player1
+                           (engine/take-space :space2) ;player1
+                           (ai/score @game-state))))
+          (it "current player lost, should be -10"
+              (should= -10
+                       (do (engine/put! :board-size 3)
+                           (engine/take-space :space0) ;player1
+                           (engine/take-space :space1) ;player1
+                           (engine/take-space :space2) ;player1
+                           (engine/change-player-turn) ;player2
+                           (ai/score @game-state))))
+          (it "game isn't over yet, should be 0"
+              (should= 0
+                       (do (engine/put! :board-size 3)
+                           (engine/take-space :space0) ;player1
+                           (engine/take-space :space1) ;player1
+                           (engine/take-space :space3) ;player1
+                           (ai/score @game-state)))))
+
+
+;; ----------------------------------------
+;; Human Computer AI
 
 (describe "player-win-scenarios:"
           (before (engine/reset-game))
