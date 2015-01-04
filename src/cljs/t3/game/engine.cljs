@@ -96,8 +96,11 @@
   ([space] (when (and (space-available? space) 
                       (not (game-over?)))
              (take-space space)
-             (change-player-turn)))
-  ([snapshot space] (when (and (space-available? snapshot space) 
-                               (not (game-over? snapshot)))
-                      (->> (take-space snapshot space)
-                           (change-player-turn)))))
+             (change-player-turn))))
+
+(def player-turn-sequence-memo
+  (memoize (fn [snapshot space] 
+             (when (and (space-available? snapshot space) 
+                        (not (game-over? snapshot)))
+               (->> (take-space snapshot space)
+                    (change-player-turn))))))

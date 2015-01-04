@@ -3,7 +3,7 @@
             [t3.game.board :as board]
             [t3.game.engine :refer [game-state all-remaining-spaces 
                                     which-player-turn? player-win?
-                                    game-over? player-turn-sequence
+                                    game-over? player-turn-sequence-memo
                                     other-player other-player-spaces]]))
 
 ;; ----------------------------------------
@@ -26,7 +26,7 @@
     [(score snapshot depth) "dummy-space"]
     (find-best-move
      (for [space (all-remaining-spaces snapshot)]
-       (let [gs (player-turn-sequence snapshot space)
+       (let [gs (player-turn-sequence-memo snapshot space)
              [space-score best-space] (minimax gs (inc depth))]
          [(* -1 space-score) space] )))))
 
