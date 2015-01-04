@@ -10,12 +10,25 @@
 ;; Minimax AI
 
 (defn score [snapshot]
-  (let [current-player (which-player-turn? snapshot)
-        opponent (other-player current-player)]
-    (cond (player-win? snapshot current-player) 10
+  (let [player (which-player-turn? snapshot)
+        opponent (other-player player)]
+    (cond (player-win? snapshot player) 10
           (player-win? snapshot opponent) -10
           :else 0)))
 
+(defn find-max-score [coll]
+  (reduce (fn [x y]
+            (if (> (first x) (first y))
+              x y)) coll))
+
+(defn minimax [snapshot]
+  (if (game-over? snapshot)
+    [(score snapshot) "dummy-space"]
+    (find-max-score
+     (for [space (all-remaining-spaces snapshot)]
+       (let [gs (player-turn-sequence snapshot space)
+             [space-score best-space] (minimax gs)]
+         [(* -1 space-score) space] )))))
 
 ;; ----------------------------------------
 ;; Human Computer AI

@@ -9,29 +9,76 @@
 
 (describe "minimax score:"
           (before (engine/reset-game))
-          (it "current player won, should be 10"
+          (it "player1 won, so from player2's persective should be -10"
+              (should= -10
+                       (do (engine/put! :board-size 3)
+                           (engine/take-space :space0) ;player1
+                           (engine/take-space :space1) ;player1
+                           (engine/player-turn-sequence :space2) ;player1
+                           (ai/score @game-state))))   ;player2's turn
+          (it "player1 won, so from player1's perspective should be 10"
               (should= 10
                        (do (engine/put! :board-size 3)
                            (engine/take-space :space0) ;player1
                            (engine/take-space :space1) ;player1
                            (engine/take-space :space2) ;player1
-                           (ai/score @game-state))))
-          (it "current player lost, should be -10"
-              (should= -10
-                       (do (engine/put! :board-size 3)
-                           (engine/take-space :space0) ;player1
-                           (engine/take-space :space1) ;player1
-                           (engine/take-space :space2) ;player1
-                           (engine/change-player-turn) ;player2
-                           (ai/score @game-state))))
+                           (ai/score @game-state))))   ;player1's turn
           (it "game isn't over yet, should be 0"
               (should= 0
                        (do (engine/put! :board-size 3)
                            (engine/take-space :space0) ;player1
                            (engine/take-space :space1) ;player1
-                           (engine/take-space :space3) ;player1
-                           (ai/score @game-state)))))
+                           (engine/player-turn-sequence :space3) ;player1
+                           (ai/score @game-state))))  ;player2's turn
+          (it "game isn't over yet, should be 0"
+              (should= 0
+                       (do (engine/put! :board-size 3)
+                           (engine/player-turn-sequence :space0) ;player1
+                           (engine/player-turn-sequence :space1) ;player2
+                           (engine/player-turn-sequence :space8) ;player1
+                           (engine/player-turn-sequence :space2) ;player2
+                           (engine/player-turn-sequence :space7) ;player1
+                           (ai/score @game-state)))) ;player2's turn
+          (it "player1 won, so from player2's perspective should be -10"
+              (should= -10
+                       (do (engine/put! :board-size 3)
+                           (engine/player-turn-sequence :space0) ;player1
+                           (engine/player-turn-sequence :space1) ;player2
+                           (engine/player-turn-sequence :space8) ;player1
+                           (engine/player-turn-sequence :space2) ;player2
+                           (engine/player-turn-sequence :space4) ;player1
+                           (ai/score @game-state))))) ;player2's turn
 
+(describe "minimax:"
+          (before (engine/reset-game))
+          (it "should try to win by picking :space4"
+              ;; ====================
+              ;; Note: Currently this fails because minimax chooses :space7. However, :space4 or :space7 win .. but :space4 wins sooner and minimax should pick that instead. Need to add depth!
+              (should= [10 :space4]
+                       (do (engine/put! :board-size 3)
+                           (engine/player-turn-sequence :space0) ;player1
+                           (engine/player-turn-sequence :space1) ;player2
+                           (engine/player-turn-sequence :space8) ;player1
+                           (engine/player-turn-sequence :space2) ;player2
+                           (ai/minimax @game-state))))
+          ;; ----------
+          (it "should try to block by picking :space1"
+              (should= [0 :space1]
+                       (do (engine/put! :board-size 3)
+                           (engine/player-turn-sequence :space4) ;player1
+                           (engine/player-turn-sequence :space0) ;player2
+                           (engine/player-turn-sequence :space8) ;player1
+                           (engine/player-turn-sequence :space2) ;player2
+                           (ai/minimax @game-state))))
+          ;; ----------
+          (it "should try to block by picking :space6"
+              (should= [10 :space6]
+                       (do (engine/put! :board-size 3)
+                           (engine/player-turn-sequence :space4) ;player1
+                           (engine/player-turn-sequence :space0) ;player2
+                           (engine/player-turn-sequence :space8) ;player1
+                           (engine/player-turn-sequence :space3) ;player2
+                           (ai/minimax @game-state)))))
 
 ;; ----------------------------------------
 ;; Human Computer AI
