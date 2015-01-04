@@ -31,49 +31,73 @@
   (if (= :player1 player) :player1-spaces :player2-spaces))
 
 ;; ----------
-(defn which-player-turn? []
-  (if (@game-state :player1-turn?) :player1 :player2))
 
-(defn change-player-turn []
-  (put! :player1-turn? (not (@game-state :player1-turn?))))
+;; NOTE: The following functions will have multiple arity. The first will work on atoms which are used during actual gameplay in the UI. However the second will work on a snapshot of that atom in the form of a map.  The snapshot will be used to determine the best-next-space using the minimax algorithm.
 
 ;; ----------
-(defn player-spaces [player]
-  (@game-state (player-spaces-keyword player)))
+(defn which-player-turn? 
+  ([] (if (@game-state :player1-turn?) :player1 :player2))
+  ([snapshot] (if (snapshot :player1-turn?) :player1 :player2)))
 
-(defn other-player-spaces [player]
-  (@game-state (player-spaces-keyword (other-player player))))
-
-(defn take-space [space]
-  (let [player-spaces-k (player-spaces-keyword (which-player-turn?))]
-    (put! player-spaces-k (conj (@game-state player-spaces-k) space))))
-
-(defn all-taken-spaces []
-  (union (@game-state :player1-spaces) (@game-state :player2-spaces)))
-
-(defn all-remaining-spaces []
-  (difference (into (sorted-set) (board-spaces (@game-state :board-size)))
-              (all-taken-spaces)))
-
-(defn space-available? [space]
-  (if (space (all-remaining-spaces)) true false))
+(defn change-player-turn 
+  ([] (put! :player1-turn? (not (@game-state :player1-turn?))))
+  ([snapshot] (assoc snapshot :player1-turn? (not (snapshot :player1-turn?)))))
 
 ;; ----------
-(defn player-win? [player]
-  (some #(every? (@game-state (player-spaces-keyword player)) %)
-        (board-wins (@game-state :board-size))))
+(defn player-spaces 
+  ([player] (@game-state (player-spaces-keyword player)))
+  ([snapshot player] (snapshot (player-spaces-keyword player))))
 
-(defn cats-game? []
-  (and (empty? (all-remaining-spaces)) 
-       (not (player-win? :player1))
-       (not (player-win? :player2))))
+(defn other-player-spaces 
+  ([player] (@game-state (player-spaces-keyword (other-player player))))
+  ([snapshot player] (snapshot (player-spaces-keyword (other-player player)))))
 
-(defn game-over? []
-  (or (cats-game?) (player-win? :player1) (player-win? :player2)))
+(defn take-space 
+  ([space] (let [player-spaces-k (player-spaces-keyword (which-player-turn?))]
+             (put! player-spaces-k (conj (@game-state player-spaces-k) space))))
+  ([snapshot space] (let [player-spaces (player-spaces-keyword (which-player-turn? snapshot))]
+                (assoc snapshot player-spaces (conj (snapshot player-spaces) space)))))
+
+(defn all-taken-spaces 
+  ([] (union (@game-state :player1-spaces) (@game-state :player2-spaces)))
+  ([snapshot] (union (snapshot :player1-spaces) (snapshot :player2-spaces))))
+
+(defn all-remaining-spaces 
+  ([] (difference (into (sorted-set) (board-spaces (@game-state :board-size)))
+                  (all-taken-spaces)))
+  ([snapshot] (difference (into (sorted-set) (board-spaces (snapshot :board-size)))
+                    (all-taken-spaces snapshot))))
+
+(defn space-available? 
+  ([space] (if (space (all-remaining-spaces)) true false))
+  ([snapshot space] (if (space (all-remaining-spaces snapshot)) true false)))
 
 ;; ----------
-(defn player-turn-sequence [space]
-  (when (and (space-available? space) 
-             (not (game-over?)))
-    (take-space space)
-    (change-player-turn)))
+(defn player-win? 
+  ([player] (some #(every? (@game-state (player-spaces-keyword player)) %)
+                  (board-wins (@game-state :board-size))))
+  ([snapshot player] (some #(every? (snapshot (player-spaces-keyword player)) %)
+                           (board-wins (snapshot :board-size)))))
+
+(defn cats-game? 
+  ([] (and (empty? (all-remaining-spaces)) 
+           (not (player-win? :player1))
+           (not (player-win? :player2))))
+  ([snapshot] (and (empty? (all-remaining-spaces snapshot)) 
+                   (not (player-win? snapshot :player1))
+                   (not (player-win? snapshot :player2)))))
+
+(defn game-over? 
+  ([] (or (cats-game?) (player-win? :player1) (player-win? :player2)))
+  ([snapshot] (or (cats-game? snapshot) (player-win? snapshot :player1) (player-win? snapshot :player2))))
+
+;; ----------
+(defn player-turn-sequence 
+  ([space] (when (and (space-available? space) 
+                      (not (game-over?)))
+             (take-space space)
+             (change-player-turn)))
+  ([snapshot space] (when (and (space-available? snapshot space) 
+                               (not (game-over? snapshot)))
+                      (->> (take-space snapshot space)
+                           (change-player-turn)))))
