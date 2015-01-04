@@ -15,21 +15,21 @@
                            (engine/take-space :space0) ;player1
                            (engine/take-space :space1) ;player1
                            (engine/player-turn-sequence :space2) ;player1
-                           (ai/score @game-state))))   ;player2's turn
+                           (ai/score @game-state 0))))   ;player2's turn
           (it "player1 won, so from player1's perspective should be 10"
               (should= 10
                        (do (engine/put! :board-size 3)
                            (engine/take-space :space0) ;player1
                            (engine/take-space :space1) ;player1
                            (engine/take-space :space2) ;player1
-                           (ai/score @game-state))))   ;player1's turn
+                           (ai/score @game-state 0))))   ;player1's turn
           (it "game isn't over yet, should be 0"
               (should= 0
                        (do (engine/put! :board-size 3)
                            (engine/take-space :space0) ;player1
                            (engine/take-space :space1) ;player1
                            (engine/player-turn-sequence :space3) ;player1
-                           (ai/score @game-state))))  ;player2's turn
+                           (ai/score @game-state 0))))  ;player2's turn
           (it "game isn't over yet, should be 0"
               (should= 0
                        (do (engine/put! :board-size 3)
@@ -38,7 +38,7 @@
                            (engine/player-turn-sequence :space8) ;player1
                            (engine/player-turn-sequence :space2) ;player2
                            (engine/player-turn-sequence :space7) ;player1
-                           (ai/score @game-state)))) ;player2's turn
+                           (ai/score @game-state 0)))) ;player2's turn
           (it "player1 won, so from player2's perspective should be -10"
               (should= -10
                        (do (engine/put! :board-size 3)
@@ -47,20 +47,19 @@
                            (engine/player-turn-sequence :space8) ;player1
                            (engine/player-turn-sequence :space2) ;player2
                            (engine/player-turn-sequence :space4) ;player1
-                           (ai/score @game-state))))) ;player2's turn
+                           (ai/score @game-state 0))))) ;player2's turn
 
 (describe "minimax:"
           (before (engine/reset-game))
           (it "should try to win by picking :space4"
-              ;; ====================
-              ;; Note: Currently this fails because minimax chooses :space7. However, :space4 or :space7 win .. but :space4 wins sooner and minimax should pick that instead. Need to add depth!
-              (should= [10 :space4]
+              ;; Because the next move would be a win, the depth is 1, which makes the score a 9 instead of a 10.
+              (should= [9 :space4]
                        (do (engine/put! :board-size 3)
                            (engine/player-turn-sequence :space0) ;player1
                            (engine/player-turn-sequence :space1) ;player2
                            (engine/player-turn-sequence :space8) ;player1
                            (engine/player-turn-sequence :space2) ;player2
-                           (ai/minimax @game-state))))
+                           (ai/minimax @game-state 0))))
           ;; ----------
           (it "should try to block by picking :space1"
               (should= [0 :space1]
@@ -69,16 +68,44 @@
                            (engine/player-turn-sequence :space0) ;player2
                            (engine/player-turn-sequence :space8) ;player1
                            (engine/player-turn-sequence :space2) ;player2
-                           (ai/minimax @game-state))))
+                           (ai/minimax @game-state 0))))
           ;; ----------
           (it "should try to block by picking :space6"
-              (should= [10 :space6]
+              ;; Note: the score is 7 because player1 will eventually win after 3 plays.
+              (should= [7 :space6]
                        (do (engine/put! :board-size 3)
                            (engine/player-turn-sequence :space4) ;player1
                            (engine/player-turn-sequence :space0) ;player2
                            (engine/player-turn-sequence :space8) ;player1
                            (engine/player-turn-sequence :space3) ;player2
-                           (ai/minimax @game-state)))))
+                           (ai/minimax @game-state 0))))
+          (it "should try to create a fork by picking :space8 (as well as foiling opponent's attempt to set up a fork."
+              ;; Note: the score is 7 because player1 will eventually win after 3 plays.
+              (should= [7 :space8]
+                       (do (engine/put! :board-size 3)
+                           (engine/player-turn-sequence :space4) ;player1
+                           (engine/player-turn-sequence :space1) ;player2
+                           (engine/player-turn-sequence :space7) ;player1
+                           (engine/player-turn-sequence :space5) ;player2
+                           (ai/minimax @game-state 0))))
+          (it "should try to create a fork by picking :space6 (as well as foiling opponent's attempt to set up a fork."
+              ;; Note: the score is 7 because player1 will eventually win after 3 plays.
+              (should= [7 :space6]
+                       (do (engine/put! :board-size 3)
+                           (engine/player-turn-sequence :space4) ;player1
+                           (engine/player-turn-sequence :space1) ;player2
+                           (engine/player-turn-sequence :space3) ;player1
+                           (engine/player-turn-sequence :space5) ;player2
+                           (ai/minimax @game-state 0))))
+          (it "should win by picking :space2"
+              ;; Note: the score is 9 because player1 will win after 1 play.
+              (should= [9 :space2]
+                       (do (engine/put! :board-size 3)
+                           (engine/player-turn-sequence :space4) ;player1
+                           (engine/player-turn-sequence :space1) ;player2
+                           (engine/player-turn-sequence :space6) ;player1
+                           (engine/player-turn-sequence :space5) ;player2
+                           (ai/minimax @game-state 0)))))
 
 ;; ----------------------------------------
 ;; Human Computer AI

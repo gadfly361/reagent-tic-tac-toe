@@ -9,25 +9,25 @@
 ;; ----------------------------------------
 ;; Minimax AI
 
-(defn score [snapshot]
+(defn score [snapshot depth]
   (let [player (which-player-turn? snapshot)
         opponent (other-player player)]
-    (cond (player-win? snapshot player) 10
-          (player-win? snapshot opponent) -10
+    (cond (player-win? snapshot player) (- 10 depth)
+          (player-win? snapshot opponent) (- depth 10)
           :else 0)))
 
-(defn find-max-score [coll]
+(defn find-best-move [coll]
   (reduce (fn [x y]
             (if (> (first x) (first y))
               x y)) coll))
 
-(defn minimax [snapshot]
+(defn minimax [snapshot depth]
   (if (game-over? snapshot)
-    [(score snapshot) "dummy-space"]
-    (find-max-score
+    [(score snapshot depth) "dummy-space"]
+    (find-best-move
      (for [space (all-remaining-spaces snapshot)]
        (let [gs (player-turn-sequence snapshot space)
-             [space-score best-space] (minimax gs)]
+             [space-score best-space] (minimax gs (inc depth))]
          [(* -1 space-score) space] )))))
 
 ;; ----------------------------------------
