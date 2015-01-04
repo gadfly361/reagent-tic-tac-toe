@@ -3,6 +3,16 @@
             [t3.game.board :as board]
             [t3.game.engine :refer [game-state all-remaining-spaces other-player other-player-spaces]]))
 
+;; ----------------------------------------
+;; Minimax AI
+
+
+
+
+
+;; ----------------------------------------
+;; Human Computer AI
+
 (defn board-size []
   (@game-state :board-size))
 

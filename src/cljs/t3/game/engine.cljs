@@ -24,6 +24,13 @@
   (swap! playing-against-state assoc :playing-against-computer? (not (@playing-against-state :playing-against-computer?))))
 
 ;; ----------
+(defn other-player [player]
+  (if (= :player1 player) :player2 :player1))
+
+(defn player-spaces-keyword [player]
+  (if (= :player1 player) :player1-spaces :player2-spaces))
+
+;; ----------
 (defn which-player-turn? []
   (if (@game-state :player1-turn?) :player1 :player2))
 
@@ -32,17 +39,14 @@
 
 ;; ----------
 (defn player-spaces [player]
-  (@game-state (keyword (str (name player) "-spaces"))))
-
-(defn other-player [player]
-  (if (= :player1 player) :player2 :player1))
+  (@game-state (player-spaces-keyword player)))
 
 (defn other-player-spaces [player]
-  (@game-state (keyword (str (name (other-player player)) "-spaces"))))
+  (@game-state (player-spaces-keyword (other-player player))))
 
 (defn take-space [space]
-  (let [player-spaces (keyword (str (name (which-player-turn?)) "-spaces"))]
-    (put! player-spaces (conj (@game-state player-spaces) space))))
+  (let [player-spaces-k (player-spaces-keyword (which-player-turn?))]
+    (put! player-spaces-k (conj (@game-state player-spaces-k) space))))
 
 (defn all-taken-spaces []
   (union (@game-state :player1-spaces) (@game-state :player2-spaces)))
@@ -56,7 +60,7 @@
 
 ;; ----------
 (defn player-win? [player]
-  (some #(every? (@game-state (keyword (str (name player) "-spaces"))) %) 
+  (some #(every? (@game-state (player-spaces-keyword player)) %)
         (board-wins (@game-state :board-size))))
 
 (defn cats-game? []
