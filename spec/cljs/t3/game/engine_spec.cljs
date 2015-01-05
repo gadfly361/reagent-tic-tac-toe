@@ -116,7 +116,7 @@
                            (engine/take-space :space2)
                            (engine/change-player-turn)
                            (engine/take-space :space3)
-                           (engine/all-remaining-spaces @game-state))))
+                           (engine/all-remaining-spaces-memo @game-state))))
           ;; -----
           (it "should have 0 spaces left"
               (should= #{}
@@ -157,7 +157,7 @@
                            (engine/take-space :space7)
                            (engine/change-player-turn)
                            (engine/take-space :space8)
-                           (engine/all-remaining-spaces @game-state)))))
+                           (engine/all-remaining-spaces-memo @game-state)))))
 
 (describe "space-available?:"
           (before (engine/reset-game))

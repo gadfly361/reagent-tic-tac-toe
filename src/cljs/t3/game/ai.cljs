@@ -1,7 +1,8 @@
 (ns t3.game.ai
   (:require [clojure.set :refer [intersection union]]
             [t3.game.board :as board]
-            [t3.game.engine :refer [game-state all-remaining-spaces 
+            [t3.game.engine :refer [game-state 
+                                    all-remaining-spaces all-remaining-spaces-memo
                                     which-player-turn? player-win?
                                     game-over? player-turn-sequence-memo
                                     other-player other-player-spaces]]))
@@ -25,7 +26,7 @@
   (if (game-over? snapshot)
     [(score snapshot depth) "dummy-space"]
     (find-best-move
-     (for [space (all-remaining-spaces snapshot)]
+     (for [space (all-remaining-spaces-memo snapshot)]
        (let [gs (player-turn-sequence-memo snapshot space)
              [space-score best-space] (minimax gs (inc depth))]
          [(* -1 space-score) space] )))))

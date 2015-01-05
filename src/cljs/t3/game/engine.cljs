@@ -32,7 +32,8 @@
 
 ;; ----------
 
-;; NOTE: The following functions will have multiple arity. The first will work on atoms which are used during actual gameplay in the UI. However the second will work on a snapshot of that atom in the form of a map.  The snapshot will be used to determine the best-next-space using the minimax algorithm.
+;; NOTE: The following functions will have multiple arity. The first will work on atoms which are used during actual gameplay in the UI. However the second will work on a snapshot of that atom in the form of a map.  The snapshot will be used to determine the best-next-space using the minimax algorithm.  
+;; Rather than using multiple arity for a few of the functions, a second function was made to allow for memoization.
 
 ;; ----------
 (defn which-player-turn? 
@@ -62,15 +63,18 @@
   ([] (union (@game-state :player1-spaces) (@game-state :player2-spaces)))
   ([snapshot] (union (snapshot :player1-spaces) (snapshot :player2-spaces))))
 
-(defn all-remaining-spaces 
-  ([] (difference (into (sorted-set) (board-spaces (@game-state :board-size)))
-                  (all-taken-spaces)))
-  ([snapshot] (difference (into (sorted-set) (board-spaces (snapshot :board-size)))
-                    (all-taken-spaces snapshot))))
+(defn all-remaining-spaces []
+  (difference (into (sorted-set) (board-spaces (@game-state :board-size)))
+              (all-taken-spaces)))
+
+(def all-remaining-spaces-memo
+  (memoize (fn [snapshot]
+             (difference (into (sorted-set) (board-spaces (snapshot :board-size)))
+                         (all-taken-spaces snapshot)))))
 
 (defn space-available? 
   ([space] (if (space (all-remaining-spaces)) true false))
-  ([snapshot space] (if (space (all-remaining-spaces snapshot)) true false)))
+  ([snapshot space] (if (space (all-remaining-spaces-memo snapshot)) true false)))
 
 ;; ----------
 (defn player-win? 
@@ -83,7 +87,7 @@
   ([] (and (empty? (all-remaining-spaces)) 
            (not (player-win? :player1))
            (not (player-win? :player2))))
-  ([snapshot] (and (empty? (all-remaining-spaces snapshot)) 
+  ([snapshot] (and (empty? (all-remaining-spaces-memo snapshot)) 
                    (not (player-win? snapshot :player1))
                    (not (player-win? snapshot :player2)))))
 
