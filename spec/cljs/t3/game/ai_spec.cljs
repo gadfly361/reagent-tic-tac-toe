@@ -170,48 +170,48 @@
                            (engine/take-space :space0)
                            (ai/player-win-next-move? :player1)))))
 
-(describe "best-next-space:"
+(describe "human-computer-ai:"
           (before (engine/reset-game))
           (it "3x3 first move, player1 should pick middle"
               (should= :space4
                        (do (engine/put! :board-size 3)
-                           (ai/best-next-space :player1))))
+                           (ai/human-computer-ai :player1))))
           (it "3x3 player1 picked :space4, player2 should a pick corner"
               (should= true
                        (do (engine/put! :board-size 3)
                            (engine/take-space :space4)
-                           (if (#{:space0 :space2 :space6 :space8} (ai/best-next-space :player2)) true false))))
+                           (if (#{:space0 :space2 :space6 :space8} (ai/human-computer-ai :player2)) true false))))
           (it "3x3 player1 picked :space0 and :space1, player1 should a pick space:6 to win"
               (should= :space6
                        (do (engine/put! :board-size 3)
                            (engine/take-space :space0)
                            (engine/take-space :space3)
-                           (ai/best-next-space :player1))))
+                           (ai/human-computer-ai :player1))))
           (it "3x3 player1 picked :space1 and :space4, player2 should a pick space:7 to block"
               (should= :space7
                        (do (engine/put! :board-size 3)
                            (engine/take-space :space1)
                            (engine/take-space :space4)
-                           (ai/best-next-space :player2))))
+                           (ai/human-computer-ai :player2))))
           (it "3x3 player1 picked :space0 and :space4, player2 should a pick opposite corner :space 8"
               (should= :space8
                        (do (engine/put! :board-size 3)
                            (engine/take-space :space0)
                            (engine/take-space :space4)
-                           (ai/best-next-space :player2))))
+                           (ai/human-computer-ai :player2))))
           (it "3x3 player1 picked :space2 and :space4, player2 should a pick opposite corner :space 6"
               (should= :space6
                        (do (engine/put! :board-size 3)
                            (engine/take-space :space2)
                            (engine/take-space :space4)
-                           (ai/best-next-space :player2))))
+                           (ai/human-computer-ai :player2))))
           (it "3x3 player1 picked :space0 and :space8, player2 should a pick something"
               (should= true
                        (do (engine/put! :board-size 3)
                            (engine/player-turn-sequence :space0)
                            (engine/player-turn-sequence :space4)
                            (engine/player-turn-sequence :space8)
-                           (if ((engine/all-remaining-spaces) (ai/best-next-space :player2)) true false))))
+                           (if ((engine/all-remaining-spaces) (ai/human-computer-ai :player2)) true false))))
           (it "3x3 player1 picked :space0, :space3, :space2, and :space7, player2 should a pick something"
               (should= true
                        (do (engine/put! :board-size 3)
@@ -222,7 +222,7 @@
                            (engine/player-turn-sequence :space2) 
                            (engine/player-turn-sequence :space1)
                            (engine/take-space :space7)
-                           (if ((engine/all-remaining-spaces) (ai/best-next-space :player2)) true false))))
+                           (if ((engine/all-remaining-spaces) (ai/human-computer-ai :player2)) true false))))
           ;; Checking clever ways to win
           (it "3x3 player1 picked :space4, :space0, player2 should a pick :space6"
               (should= :space6
@@ -230,18 +230,18 @@
                            (engine/player-turn-sequence :space4)
                            (engine/player-turn-sequence :space8)
                            (engine/player-turn-sequence :space0)
-                           (ai/best-next-space :player2))))
+                           (ai/human-computer-ai :player2))))
           (it "3x3 player1 picked :space1, :space4, player2 should a pick :space2"
               (should= :space2
                        (do (engine/put! :board-size 3)
                            (engine/player-turn-sequence :space1)
                            (engine/player-turn-sequence :space4)
                            (engine/player-turn-sequence :space5)
-                           (ai/best-next-space :player2))))
+                           (ai/human-computer-ai :player2))))
           (it "3x3 player1 picked :space1, :space4, player2 should a pick anything but a corner"
               (should= true
                        (do (engine/put! :board-size 3)
                            (engine/player-turn-sequence :space8)
                            (engine/player-turn-sequence :space4)
                            (engine/player-turn-sequence :space0)
-                           (if (#{:space1 :space3 :space5 :space7} (ai/best-next-space :player2)) true)))))
+                           (if (#{:space1 :space3 :space5 :space7} (ai/human-computer-ai :player2)) true)))))
