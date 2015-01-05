@@ -78,22 +78,32 @@
 
 ;; ----------
 (defn player-win? 
-  ([player] (some #(every? (@game-state (player-spaces-keyword player)) %)
-                  (board-wins (@game-state :board-size))))
-  ([snapshot player] (some #(every? (snapshot (player-spaces-keyword player)) %)
-                           (board-wins (snapshot :board-size)))))
+  [player] 
+  (let [p (player-spaces-keyword player)
+        player-spaces (@game-state p)
+        size (@game-state :board-size)]
+    (some #(every? player-spaces  %)
+          (board-wins size))))
+
+(def player-win?-memo
+  (memoize (fn [snapshot player] 
+             (let [p (player-spaces-keyword player)
+                   player-spaces (snapshot p)
+                   size (snapshot :board-size)]
+               (some #(every? player-spaces  %)
+                     (board-wins size))))))
 
 (defn cats-game? 
   ([] (and (empty? (all-remaining-spaces)) 
            (not (player-win? :player1))
            (not (player-win? :player2))))
   ([snapshot] (and (empty? (all-remaining-spaces-memo snapshot)) 
-                   (not (player-win? snapshot :player1))
-                   (not (player-win? snapshot :player2)))))
+                   (not (player-win?-memo snapshot :player1))
+                   (not (player-win?-memo snapshot :player2)))))
 
 (defn game-over? 
   ([] (or (cats-game?) (player-win? :player1) (player-win? :player2)))
-  ([snapshot] (or (cats-game? snapshot) (player-win? snapshot :player1) (player-win? snapshot :player2))))
+  ([snapshot] (or (cats-game? snapshot) (player-win?-memo snapshot :player1) (player-win?-memo snapshot :player2))))
 
 ;; ----------
 (defn player-turn-sequence 

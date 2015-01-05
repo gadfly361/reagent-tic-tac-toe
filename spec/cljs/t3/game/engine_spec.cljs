@@ -207,7 +207,7 @@
                            (engine/take-space :space0)
                            (engine/take-space :space1)
                            (engine/take-space :space2)
-                           (engine/player-win? @game-state :player1))))
+                           (engine/player-win?-memo @game-state :player1))))
           ;; -----
           (it "player2 should win on 3x3"
               (should= true
@@ -224,7 +224,7 @@
                            (engine/take-space :space0)
                            (engine/take-space :space4)
                            (engine/take-space :space8)
-                           (engine/player-win? @game-state :player2))))
+                           (engine/player-win?-memo @game-state :player2))))
           ;; -----
           (it "player1 should win 4x4"
               (should= true                      
@@ -241,7 +241,7 @@
                            (engine/take-space :space1)
                            (engine/take-space :space2)
                            (engine/take-space :space3)
-                           (engine/player-win? @game-state :player1))))
+                           (engine/player-win?-memo @game-state :player1))))
           ;; -----
           (it "player2 should win 4x4"
               (should= true                      
@@ -260,7 +260,7 @@
                            (engine/take-space :space5)
                            (engine/take-space :space10)
                            (engine/take-space :space15)
-                           (engine/player-win? @game-state :player2))))
+                           (engine/player-win?-memo @game-state :player2))))
           ;; -----
           (it "player1 should not win on 3x3"
               (should= nil
@@ -275,7 +275,7 @@
                            (engine/take-space :space0)
                            (engine/take-space :space1)
                            (engine/take-space :space3)
-                           (engine/player-win? @game-state :player1))))
+                           (engine/player-win?-memo @game-state :player1))))
           ;; -----
           (it "player1 should not win on 4x4"
               (should= nil
@@ -292,7 +292,7 @@
                            (engine/take-space :space1)
                            (engine/take-space :space2)
                            (engine/take-space :space4)
-                           (engine/player-win? @game-state :player1)))))
+                           (engine/player-win?-memo @game-state :player1)))))
 
 (describe "cats-game?:"
           (before (engine/reset-game))

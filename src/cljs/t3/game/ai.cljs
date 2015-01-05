@@ -3,7 +3,7 @@
             [t3.game.board :as board]
             [t3.game.engine :refer [game-state 
                                     all-remaining-spaces all-remaining-spaces-memo
-                                    which-player-turn? player-win?
+                                    which-player-turn? player-win?-memo
                                     game-over? player-turn-sequence-memo
                                     other-player other-player-spaces]]))
 
@@ -13,8 +13,8 @@
 (defn score [snapshot depth]
   (let [player (which-player-turn? snapshot)
         opponent (other-player player)]
-    (cond (player-win? snapshot player) (- 10 depth)
-          (player-win? snapshot opponent) (- depth 10)
+    (cond (player-win?-memo snapshot player) (- 10 depth)
+          (player-win?-memo snapshot opponent) (- depth 10)
           :else 0)))
 
 (defn find-best-move [coll]
