@@ -1,7 +1,53 @@
 (ns t3.game.ai
-  (:require [clojure.set :refer [intersection union]]
+  (:require [clojure.set :refer [intersection union difference]]
             [t3.game.board :as board]
-            [t3.game.engine :refer [game-state all-remaining-spaces other-player other-player-spaces]]))
+            [t3.game.engine :refer [game-state 
+                                    all-remaining-spaces all-taken-spaces all-remaining-spaces-memo
+                                    which-player-turn? player-win?-memo
+                                    game-over? player-turn-sequence-memo
+                                    other-player other-player-spaces]]))
+
+;; ----------------------------------------
+;; Minimax AI
+
+(defn score [snapshot depth]
+  (let [player (which-player-turn? snapshot)
+        opponent (other-player player)]
+    (cond (player-win?-memo snapshot player) (- 10 depth)
+          (player-win?-memo snapshot opponent) (- depth 10)
+          :else 0)))
+
+(defn find-max-move [coll]
+  (reduce (fn [x y]
+            (if (> (first x) (first y))
+              x y)) coll))
+
+(defn minimax [snapshot depth]
+  (if (game-over? snapshot)
+    [(score snapshot depth) "dummy-space"]
+    (find-max-move
+     (for [space (all-remaining-spaces-memo snapshot)]
+       (let [gs (player-turn-sequence-memo snapshot space)
+             [space-score best-space] (minimax gs (inc depth))]
+         [(* -1 space-score) space] )))))
+
+(defn minimax-first-move 
+  "First move by computer using minimax algorithm on a 3x3"
+  [space-taken]
+  ({:space0 :space4, :space1 :space7, :space2 :space4,
+    :space3 :space6, :space4 :space8, :space5 :space8,
+    :space6 :space4, :space7 :space8, :space8 :space4}
+   space-taken))
+
+;; Note: minimax currently is only being used after the first move on a 3x3. 
+;; It is too slow to work on larger boards.
+(defn minimax-best-move []
+  (if (= 1 (count (all-taken-spaces)))
+    (minimax-first-move (first (all-taken-spaces)))
+    (second (minimax @game-state 0))))
+
+;; ----------------------------------------
+;; Human Computer AI
 
 (defn board-size []
   (@game-state :board-size))
@@ -82,7 +128,7 @@
           (rank-spaces-by-occurence (player-win-scenarios-with-two-left player))))
 
 ;; ----------
-(defn best-next-space [player]
+(defn human-computer-ai [player]
   (cond 
    ;; Can you win? If so, take winning space.
    (player-win-next-move? player) 
@@ -122,3 +168,12 @@
 
    ;; Take from remaining spaces
    :else (first (all-remaining-spaces))))
+
+
+;; ========================================
+;; Best next space
+
+(defn best-next-space []
+  (if (= (board-size) 3)
+    (minimax-best-move)
+    (human-computer-ai (which-player-turn?))))

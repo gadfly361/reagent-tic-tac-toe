@@ -74,7 +74,7 @@
 
     (if (engine/player-turn-sequence space)
         (do (engine/player-turn-sequence space)
-            (if (ai/best-next-space (which-player-turn?))
-                (engine/player-turn-sequence (ai/best-next-space (which-player-turn?))))))
+            (if (ai/best-next-space)
+                (engine/player-turn-sequence (ai/best-next-space)))))
     
     (engine/player-turn-sequence space)))
