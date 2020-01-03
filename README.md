@@ -1,6 +1,6 @@
 # tic-tac-toe
 
-Tic Tac Toe built with [Reagent](https://github.com/reagent-project/reagent).  [Demo](http://rc-tic-tac-toe-mm.s3-website-us-west-1.amazonaws.com/)
+Tic Tac Toe built with [Reagent](https://github.com/reagent-project/reagent).
 
 The game employs a minimax ai on the 3x3 board, but reverts to a heuristic ai for larger boards.
 
